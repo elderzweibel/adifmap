@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced ADIF QSO Mapper</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    
+    <link rel="stylesheet" href="mapper.css">
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
+    
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <h1>🛰️ Advanced ADIF QSO Mapper</h1>
+    <p>QSOs are **aggregated** (grouped by call/band/grid) for clean display and **clustered** for high performance. Hover over a dot or click a cluster to explore.</p>
+    
+    <div class="controls-panel">
+        <div class="control-group file-input-group">
+            <label for="adifFile">Choose ADIF File:</label>
+            <input type="file" id="adifFile" accept=".adi,.adif">
+        </div>
+        
+        <div class="control-group">
+            <label>&nbsp;</label>
+            <button onclick="window.generateRandomQSOs(1000)">Generate 1000 Random QSOs</button>
+        </div>
+        
+        <div class="control-group">
+            <label for="homeGrid">Your Home Grid:</label>
+            <input type="text" id="homeGrid" value="FN31" maxlength="6" onchange="window.updateHomeLocation()">
+        </div>
+
+        <div class="control-group">
+            <label for="bandFilter">Filter by Band:</label>
+            <select id="bandFilter" onchange="window.applyFilters()">
+                <option value="ALL">All Bands</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label for="modeFilter">Filter by Mode:</label>
+            <select id="modeFilter" onchange="window.applyFilters()">
+                <option value="ALL">All Modes</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="stats" id="stats">
+        <p><strong>Total QSOs Parsed (Raw):</strong> <span id="qsoCount">0</span></p>
+        <p><strong>QSO Groups Mapped:</strong> <span id="mappedCount">0</span></p>
+        <p><strong>Home Location:</strong> <span id="homeLocationDisplay">Set to FN31</span></p>
+    </div>
+
+    <div id="map"></div>
+</div>
+
+<script src="adif_logic.js"></script>
+
+</body>
+</html>
