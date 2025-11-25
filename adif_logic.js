@@ -6,14 +6,10 @@ const BAND_COLORS = {
     '1.25M': '#808080', '70CM': '#808000', '33CM': '#008000', '23CM': '#000080',
     'SHF': '#804040', 'OTHER': '#404040', 'N/A': '#000000'
 };
-let allQSOs = []; 
-let aggregatedQSOs = []; 
+let allQSOs = []; // Raw QSOs from the file
+let aggregatedQSOs = []; // Grouped/Cleaned QSOs used for mapping
 let homeCoords = null;
 let homeMarker = null;
-
-const SAMPLE_BANDS = ['160M', '80M', '40M', '20M', '15M', '10M', '6M', '2M', '70CM'];
-const SAMPLE_MODES = ['SSB', 'CW', 'FT8', 'RTTY', 'FM'];
-const SAMPLE_CALLS = ['W1AW', 'K6XX', 'N7YYY', 'AA0BB', 'G3ZZ', 'F4QQQ', 'VK3CC', 'JA1DD', 'ZL2EE'];
 
 // --- Map Initialization ---
 const map = L.map('map').setView([0, 0], 2);
@@ -29,7 +25,7 @@ let overlayLayer = L.layerGroup().addTo(map);
 // --- Geodesic and Maidenhead Functions ---
 
 function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; 
+    const R = 6371; // Earth radius in km
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
     const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
@@ -126,6 +122,7 @@ function processQSOs(rawQSOs) {
     rawQSOs.forEach(qso => {
         const call = qso.CALL || 'NOCALL';
         const band = qso.BAND || 'N/A';
+        // Only use 4-digit grid for aggregation key
         const grid = (qso.GRIDSQUARE && qso.GRIDSQUARE.length >= 4) ? qso.GRIDSQUARE.substring(0, 4) : 'NOGRID';
         
         const key = `${call}_${band}_${grid}`; 
@@ -139,6 +136,7 @@ function processQSOs(rawQSOs) {
             };
         } else {
             aggregated[key].count++;
+            // Update last QSO time if current QSO is chronologically later (simple check)
             if ((qso.QSO_DATE + qso.TIME_ON) > (aggregated[key].lastQSO.QSO_DATE + aggregated[key].lastQSO.TIME_ON)) {
                  aggregated[key].lastQSO = qso; 
             }
@@ -146,58 +144,6 @@ function processQSOs(rawQSOs) {
     });
 
     return Object.values(aggregated);
-}
-
-// --- Random Data Generation ---
-
-function getRandomElement(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function generateRandomGrid() {
-    const L1 = String.fromCharCode(65 + Math.floor(Math.random() * 18)); 
-    const L2 = String.fromCharCode(65 + Math.floor(Math.random() * 18));
-    const N1 = Math.floor(Math.random() * 10);
-    const N2 = Math.floor(Math.random() * 10);
-    return `${L1}${L2}${N1}${N2}`;
-}
-
-window.generateRandomQSOs = function(numQSOs) {
-    const rawQSOs = [];
-    const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const time = new Date().toTimeString().slice(0, 6).replace(/:/g, '');
-
-    for (let i = 0; i < numQSOs; i++) {
-        const qso = {};
-        
-        qso.CALL = getRandomElement(SAMPLE_CALLS) + i; 
-        qso.BAND = getRandomElement(SAMPLE_BANDS);
-        qso.MODE = getRandomElement(SAMPLE_MODES);
-        
-        if (Math.random() < 0.2) {
-            qso.GRIDSQUARE = "FN31"; 
-        } else {
-            qso.GRIDSQUARE = generateRandomGrid();
-        }
-        
-        qso.QSO_DATE = date;
-        qso.TIME_ON = time;
-
-        rawQSOs.push(qso);
-        
-        // Add random duplicates for testing aggregation
-        const duplicateCount = Math.floor(Math.random() * 5); 
-        for(let j=0; j<duplicateCount; j++){
-             rawQSOs.push(qso);
-        }
-    }
-    
-    allQSOs = rawQSOs;
-    aggregatedQSOs = processQSOs(allQSOs); 
-    
-    document.getElementById('qsoCount').textContent = allQSOs.length;
-    buildFilterOptions(aggregatedQSOs);
-    window.applyFilters();
 }
 
 // --- Filtering and Mapping ---
@@ -228,7 +174,7 @@ function buildFilterOptions(qsos) {
 }
 
 window.applyFilters = function() {
-    clusterGroup.clearLayers(); 
+    clusterGroup.clearLayers(); // Clear markers from the cluster group
     overlayLayer.clearLayers();
     let mappedCount = 0;
     let bounds = [];
@@ -237,7 +183,7 @@ window.applyFilters = function() {
     const selectedBand = document.getElementById('bandFilter').value;
     const selectedMode = document.getElementById('modeFilter').value;
 
-    for (const qso of aggregatedQSOs) { 
+    for (const qso of aggregatedQSOs) { // Use aggregated QSOs
         const qsoBand = qso.BAND || 'N/A';
         const qsoMode = qso.MODE || 'N/A';
 
