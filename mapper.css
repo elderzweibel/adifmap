@@ -41,11 +41,21 @@ label {
     margin-bottom: 5px; 
     color: #333; 
 }
-select, input[type="text"], input[type="file"] { 
+select, input[type="text"], input[type="file"], button { 
     padding: 5px; 
     border: 1px solid #ccc; 
     border-radius: 3px; 
     width: 100%; 
+    box-sizing: border-box; /* Ensure padding doesn't affect width */
+}
+button {
+    background-color: #28a745;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+}
+button:hover {
+    background-color: #218838;
 }
 .stats { 
     margin-top: 15px; 
