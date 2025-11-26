@@ -1,7 +1,7 @@
 // /functions/test-r2.js
 export async function onRequest(context) {
   // Use the variable name you set in the binding
-  const bucket = context.env.k1iad; 
+  const bucket = context.env.k1iad-storage; 
 
   try {
     const object = await bucket.get('test.txt');
