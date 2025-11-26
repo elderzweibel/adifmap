@@ -1,6 +1,6 @@
 // /functions/test-r2.js
 
-
+// garbage
 
 export async function onRequest(context) {
   // Use the variable name you set in the binding
