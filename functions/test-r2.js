@@ -1,4 +1,15 @@
 // /functions/test-r2.js
+
+
+// functions/test-r2.js
+
+// A small change to force a new deployment.
+export async function onRequest(context) { 
+    // ... rest of your code
+}
+
+
+
 export async function onRequest(context) {
   // Use the variable name you set in the binding
   const bucket = context.env.k1iad-storage; 
