@@ -3,11 +3,6 @@
 
 // functions/test-r2.js
 
-// A small change to force a new deployment.
-export async function onRequest(context) { 
-    // ... rest of your code
-}
-
 
 
 export async function onRequest(context) {
