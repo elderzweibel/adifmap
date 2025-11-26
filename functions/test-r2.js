@@ -8,6 +8,9 @@
  */
 export async function onRequest(context) {
     
+
+
+
     // The variable name MUST exactly match the binding you set in the Pages settings.
     const bucket = context.env.k1iad-storage; 
     
