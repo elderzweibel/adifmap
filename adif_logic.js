@@ -15,13 +15,17 @@ const SAMPLE_BANDS = ['160M', '80M', '40M', '20M', '15M', '10M', '6M', '2M', '70
 const SAMPLE_MODES = ['SSB', 'CW', 'FT8', 'RTTY', 'FM'];
 const SAMPLE_CALLS = ['W1AW', 'K6XX', 'N7YYY', 'AA0BB', 'G3ZZ', 'F4QQQ', 'VK3CC', 'JA1DD', 'ZL2EE'];
 
+// --- R2 Configuration ---
+// CORRECT THIS: It should be your public endpoint URL ending with a slash.
+const R2_PUBLIC_BASE_URL = 'https://map.k1iad.net/'; 
+
+
 // --- Map Initialization ---
 const map = L.map('map').setView([0, 0], 2);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19, attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
-// Use a cluster group instead of a standard layer for markers
 let clusterGroup = L.markerClusterGroup(); 
 map.addLayer(clusterGroup); 
 let overlayLayer = L.layerGroup().addTo(map);
@@ -97,7 +101,7 @@ window.updateHomeLocation = function() {
 }
 
 
-// --- ADIF Parsing ---
+// --- ADIF Parsing and Aggregation ---
 function parseAdif(adifText) {
     const qsos = [];
     const records = adifText.toUpperCase().split('<EOR>');
@@ -117,8 +121,6 @@ function parseAdif(adifText) {
     }
     return qsos;
 }
-
-// --- QSO Aggregation Function ---
 
 function processQSOs(rawQSOs) {
     const aggregated = {};
@@ -149,7 +151,6 @@ function processQSOs(rawQSOs) {
 }
 
 // --- Random Data Generation ---
-
 function getRandomElement(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
@@ -185,7 +186,6 @@ window.generateRandomQSOs = function(numQSOs) {
 
         rawQSOs.push(qso);
         
-        // Add random duplicates for testing aggregation
         const duplicateCount = Math.floor(Math.random() * 5); 
         for(let j=0; j<duplicateCount; j++){
              rawQSOs.push(qso);
@@ -306,7 +306,6 @@ window.applyFilters = function() {
                 permanent: false, direction: 'top', offset: L.point(0, -5)
             });
             
-            // ADD MARKER TO THE CLUSTER GROUP
             clusterGroup.addLayer(marker); 
 
             const grid4 = grid.substring(0, 4);
@@ -333,31 +332,69 @@ window.applyFilters = function() {
     }
 }
 
+
+// --- R2 Communication Functions ---
+
+function processAdifContent(adifText) {
+    try {
+        allQSOs = parseAdif(adifText);
+        aggregatedQSOs = processQSOs(allQSOs); 
+        
+        document.getElementById('qsoCount').textContent = allQSOs.length;
+        
+        buildFilterOptions(aggregatedQSOs);
+        window.applyFilters(); 
+    } catch (error) {
+        alert('Error parsing ADIF file content: ' + error.message);
+        document.getElementById('qsoCount').innerHTML = '<span class="error">Error!</span>';
+        document.getElementById('mappedCount').innerHTML = '<span class="error">Error!</span>';
+        console.error("Parsing error:", error);
+    }
+}
+
+window.loadR2File = async function(fileName) {
+    const fileUrl = R2_PUBLIC_BASE_URL + fileName;
+    console.log(`Attempting to fetch file from: ${fileUrl}`);
+
+    try {
+        const response = await fetch(fileUrl);
+
+        if (!response.ok) {
+            // Throw a specific error if the fetch failed (404, 403, CORS block)
+            throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`);
+        }
+
+        const adifText = await response.text();
+        processAdifContent(adifText);
+    } catch (error) {
+        // This general alert is triggered for both network/CORS errors and file-not-found errors
+        alert(`Error loading file from R2. Check the browser console (F12) for detailed network/CORS errors.`);
+        console.error('R2 Download Error:', error);
+    }
+}
+
+/**
+ * LOADS SPECIFIC K1IAD LOG: Loads the fixed file wsjtx_log.adi from R2.
+ */
+window.loadK1IADLog = function() {
+    const K1IAD_LOG_FILENAME = "wsjtx_log.adi";
+    alert(`Initiating load for K1IAD Log: ${K1IAD_LOG_FILENAME}`);
+    window.loadR2File(K1IAD_LOG_FILENAME);
+}
+
+
 // --- Main File Loader ---
 document.addEventListener('DOMContentLoaded', () => {
     window.updateHomeLocation();
 
+    // Local file input handler
     document.getElementById('adifFile').addEventListener('change', function(event) {
         const file = event.target.files[0];
         if (!file) return;
 
         const reader = new FileReader();
         reader.onload = function(e) {
-            const adifText = e.target.result;
-            try {
-                allQSOs = parseAdif(adifText);
-                aggregatedQSOs = processQSOs(allQSOs); 
-                
-                document.getElementById('qsoCount').textContent = allQSOs.length;
-                
-                buildFilterOptions(aggregatedQSOs);
-                window.applyFilters(); 
-            } catch (error) {
-                alert('Error parsing ADIF file: ' + error.message);
-                document.getElementById('qsoCount').innerHTML = '<span class="error">Error!</span>';
-                document.getElementById('mappedCount').innerHTML = '<span class="error">Error!</span>';
-                console.error("Parsing error:", error);
-            }
+            processAdifContent(e.target.result); 
         };
         reader.readAsText(file);
     });

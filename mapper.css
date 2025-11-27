@@ -46,7 +46,7 @@ select, input[type="text"], input[type="file"], button {
     border: 1px solid #ccc; 
     border-radius: 3px; 
     width: 100%; 
-    box-sizing: border-box; /* Ensure padding doesn't affect width */
+    box-sizing: border-box;
 }
 button {
     background-color: #28a745;

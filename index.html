@@ -22,14 +22,20 @@
 
 <div class="container">
     <h1>🛰️ Advanced ADIF QSO Mapper</h1>
-    <p>QSOs are **aggregated** (grouped by call/band/grid) for clean display and **clustered** for high performance. Hover over a dot or click a cluster to explore.</p>
+    <p>QSOs are **aggregated** (grouped by call/band/grid) for clean display and **clustered** for high performance.</p>
     
     <div class="controls-panel">
+        
         <div class="control-group file-input-group">
-            <label for="adifFile">Choose ADIF File:</label>
+            <label for="adifFile">Load Local ADIF File:</label>
             <input type="file" id="adifFile" accept=".adi,.adif">
         </div>
         
+        <div class="control-group">
+            <label>&nbsp;</label>
+            <button onclick="window.loadK1IADLog()" style="background-color: #007bff;">Load K1IAD ADIF</button>
+        </div>
+
         <div class="control-group">
             <label>&nbsp;</label>
             <button onclick="window.generateRandomQSOs(1000)">Generate 1000 Random QSOs</button>
@@ -39,7 +45,7 @@
             <label for="homeGrid">Your Home Grid:</label>
             <input type="text" id="homeGrid" value="FN31" maxlength="6" onchange="window.updateHomeLocation()">
         </div>
-        
+
         <div class="control-group">
             <label for="bandFilter">Filter by Band:</label>
             <select id="bandFilter" onchange="window.applyFilters()">
@@ -54,7 +60,7 @@
             </select>
         </div>
     </div>
-
+    
     <div class="stats" id="stats">
         <p><strong>Total QSOs Parsed (Raw):</strong> <span id="qsoCount">0</span></p>
         <p><strong>QSO Groups Mapped:</strong> <span id="mappedCount">0</span></p>
