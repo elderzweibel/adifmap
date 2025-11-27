@@ -12,7 +12,16 @@ export async function onRequest(context) {
 
 
     // The variable name MUST exactly match the binding you set in the Pages settings.
-    const bucket = context.env.k1iad-storage; 
+    // const bucket = context.env.k1iad-storage; 
+    // const bucket = context.env.KLIAD_STORAGE; 
+
+
+
+    const bucket = context.env["kliad-storage"];
+
+
+    
+
     
     // This is the file the function will attempt to read from your R2 bucket.
     const testKey = 'test-file.txt'; 
